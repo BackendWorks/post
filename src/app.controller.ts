@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { CreatePostDto, GetPostsDto } from './core/dtos';
+import { CreatePostDto, GetPostsDto, UpdatePostDto } from './core/dtos';
 import { CurrentUser } from './core/user.decorator';
 
 @Controller()
@@ -15,5 +15,10 @@ export class AppController {
   @Get('/')
   getPosts(@Query() data: GetPostsDto) {
     return this.appService.getAllPosts(data);
+  }
+
+  @Put('/:id/update')
+  updatePosts(@Param() id: number, @Body() data: UpdatePostDto) {
+    return this.appService.updatePost(id, data);
   }
 }

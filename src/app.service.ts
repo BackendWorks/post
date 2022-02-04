@@ -3,15 +3,18 @@ import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { Posts } from './database/entities/post.entity';
 import { PostRepository } from './database/repository/post.repository';
-import { CreatePostDto, GetPostsDto } from './core/dtos';
+import { CreatePostDto, GetPostsDto, UpdatePostDto } from './core/dtos';
+import { IMailPayload } from './core/interfaces/IMailPayload';
 
 @Injectable()
 export class AppService {
   constructor(
     private postRepository: PostRepository,
     @Inject('USER_SERVICE') private readonly userClient: ClientProxy,
+    @Inject('MAIL_SERVICE') private readonly mailClient: ClientProxy,
   ) {
     this.userClient.connect();
+    this.mailClient.connect();
   }
 
   public async createNewPost(
@@ -51,5 +54,31 @@ export class AppService {
         });
       }),
     );
+  }
+
+  public async updatePost(id: number, data: UpdatePostDto): Promise<Posts> {
+    await this.postRepository.update(id, data);
+
+    //get updated post
+    const updatedPost = await this.postRepository.findOne(id);
+    const createdBy = await firstValueFrom(
+      this.userClient.send('get_user_by_id', {
+        userId: updatedPost.createdBy,
+      }),
+    );
+    updatedPost.createdBy = createdBy;
+    const payload: IMailPayload = {
+      template: 'POST_UPDATED',
+      payload: {
+        emails: [createdBy.email],
+        data: {
+          firstName: createdBy.firstName,
+          lastName: createdBy.lastName,
+        },
+        subject: 'Post Updated',
+      },
+    };
+    this.mailClient.emit('send_email', payload);
+    return updatedPost;
   }
 }
