@@ -4,13 +4,16 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { Role } from 'src/config/constants';
 
 @Injectable()
 export class ClientAuthGuard implements CanActivate {
   public constructor(
     @Inject('TOKEN_SERVICE') private readonly client: ClientProxy,
+    private reflector: Reflector,
   ) {
     this.client.connect();
   }
@@ -26,6 +29,16 @@ export class ClientAuthGuard implements CanActivate {
       if (!decode) {
         return false;
       }
+
+      // role based authentication for requested endpoint
+      const allowedRoles = this.reflector.getAllAndOverride<Role[]>('roles', [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+      if (allowedRoles.indexOf(decode.role) === -1) {
+        return false;
+      }
+
       request.userId = decode.userId;
       return true;
     } catch (e) {
