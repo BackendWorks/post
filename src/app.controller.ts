@@ -17,7 +17,7 @@ export class AppController {
     return this.appService.getAllPosts(data);
   }
 
-  @Put('/:id/update')
+  @Put('/update/:id')
   updatePosts(@Param() id: number, @Body() data: UpdatePostDto) {
     return this.appService.updatePost(id, data);
   }

@@ -1,44 +1,25 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from './config/config.module';
-import { Connection } from 'typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigService } from './config/config.service';
-import { PostRepository } from './database/repository/post.repository';
 import { APP_GUARD } from '@nestjs/core';
 import { ClientAuthGuard } from './core/guards/auth.guard';
+import { PrismaService } from './core/services/prisma.service';
 
 @Module({
   imports: [
     ConfigModule,
-    DatabaseModule,
-    ConfigModule,
     ClientsModule.registerAsync([
       {
-        name: 'TOKEN_SERVICE',
+        name: 'AUTH_SERVICE',
         imports: [ConfigModule],
         useFactory: async (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
             urls: [`${configService.get('rb_url')}`],
-            queue: `${configService.get('token_queue')}`,
-            queueOptions: {
-              durable: false,
-            },
-          },
-        }),
-        inject: [ConfigService],
-      },
-      {
-        name: 'USER_SERVICE',
-        imports: [ConfigModule],
-        useFactory: async (configService: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [`${configService.get('rb_url')}`],
-            queue: `${configService.get('user_queue')}`,
+            queue: `${configService.get('auth_queue')}`,
             queueOptions: {
               durable: false,
             },
@@ -70,12 +51,7 @@ import { ClientAuthGuard } from './core/guards/auth.guard';
       useClass: ClientAuthGuard,
     },
     AppService,
-    {
-      provide: PostRepository,
-      useFactory: (connection: Connection) =>
-        connection.getCustomRepository(PostRepository),
-      inject: [Connection],
-    },
+    PrismaService,
   ],
 })
 export class AppModule {}
