@@ -24,6 +24,8 @@ export class AppService {
     const post = {} as Post;
     post.content = data.content;
     post.author = authUserId;
+    post.title = data.title;
+    post.image = String(data.fileId);
     const create_post = await this.prisma.post.create({ data: post });
     const createdBy = await firstValueFrom(
       this.authClient.send('get_user_by_id', {
