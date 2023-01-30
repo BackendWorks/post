@@ -2,39 +2,22 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
   Param,
   Post,
   Put,
   Query,
-  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Response } from 'express';
-import { CreatePostDto, GetPostsDto, UpdatePostDto } from './core/dtos';
-import { CurrentUser } from './core/user.decorator';
-import { AllowUnauthorizedRequest } from './core/allow.unauthorized.decorator';
-import { PrismaService } from './core/services/prisma.service';
+import { CreatePostDto, UpdatePostDto } from './core/dtos';
+import { CurrentUser } from './core/decorators';
+import { JwtAuthGuard, RolesGuard } from './core/guards';
 
 @Controller()
+@UseGuards(JwtAuthGuard)
+@UseGuards(RolesGuard)
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private prisma: PrismaService,
-  ) {}
-
-  @AllowUnauthorizedRequest()
-  @Get('/health')
-  public healthCheck(@Res() res: Response) {
-    this.prisma
-      .$connect()
-      .then(() => {
-        return res.status(HttpStatus.OK).json({ stauts: 'ok' });
-      })
-      .catch((e) => {
-        return res.status(HttpStatus.OK).json({ stauts: 'down', error: e });
-      });
-  }
+  constructor(private readonly appService: AppService) {}
 
   @Post('/create')
   createPost(@Body() data: CreatePostDto, @CurrentUser() authUserId: number) {
@@ -42,8 +25,14 @@ export class AppController {
   }
 
   @Get('/')
-  getPosts(@Query() data: GetPostsDto) {
-    return this.appService.getAllPosts(data);
+  getPosts(@Query() data: { page: number; limit: number; term: string }) {
+    const { limit, page, term } = data;
+
+    return this.appService.getAllPosts({
+      limit: Number(limit),
+      page: Number(page),
+      term,
+    });
   }
 
   @Put('/update/:id')
