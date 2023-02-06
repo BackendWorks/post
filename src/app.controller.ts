@@ -1,21 +1,9 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { CreatePostDto, UpdatePostDto } from './core/dtos';
-import { CurrentUser } from './core/decorators';
-import { JwtAuthGuard, RolesGuard } from './core/guards';
+import { CreatePostDto, UpdatePostDto } from './dtos';
+import { CurrentUser } from './decorators';
 
 @Controller()
-@UseGuards(JwtAuthGuard)
-@UseGuards(RolesGuard)
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
@@ -27,7 +15,6 @@ export class AppController {
   @Get('/')
   getPosts(@Query() data: { page: number; limit: number; term: string }) {
     const { limit, page, term } = data;
-
     return this.appService.getAllPosts({
       limit: Number(limit),
       page: Number(page),

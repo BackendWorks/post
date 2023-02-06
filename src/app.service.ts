@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Post } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
-import { CreatePostDto, UpdatePostDto } from './core/dtos';
+import { CreatePostDto, UpdatePostDto } from './dtos';
 import { IMailPayload } from './types';
-import { PrismaService } from './core/services';
+import { PrismaService } from './services';
 
 @Injectable()
 export class AppService {
