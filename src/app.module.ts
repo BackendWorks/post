@@ -56,21 +56,6 @@ import { LoggerModule } from 'nestjs-pino';
         }),
         inject: [ConfigService],
       },
-      {
-        name: 'MAIL_SERVICE',
-        imports: [ConfigModule],
-        useFactory: (configService: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [`${configService.get('rb_url')}`],
-            queue: `${configService.get('mailer_queue')}`,
-            queueOptions: {
-              durable: false,
-            },
-          },
-        }),
-        inject: [ConfigService],
-      },
     ]),
   ],
   controllers: [AppController, HealthController],

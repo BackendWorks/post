@@ -7,12 +7,13 @@ import { CurrentUser } from './decorators';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Post('/create')
-  createPost(@Body() data: CreatePostDto, @CurrentUser() authUserId: number) {
-    return this.appService.createNewPost(data, authUserId);
+  @Post()
+  createPost(@Body() data: CreatePostDto, @CurrentUser() userId: number) {
+    console.log(data);
+    return this.appService.createNewPost(data, userId);
   }
 
-  @Get('/')
+  @Get()
   getPosts(@Query() data: { page: number; limit: number; term: string }) {
     const { limit, page, term } = data;
     return this.appService.getAllPosts({
@@ -22,8 +23,13 @@ export class AppController {
     });
   }
 
-  @Put('/update/:id')
-  updatePosts(@Param() id: number, @Body() data: UpdatePostDto) {
-    return this.appService.updatePost(id, data);
+  @Put(':id')
+  updatePosts(@Param() param: { id: string }, @Body() data: UpdatePostDto) {
+    return this.appService.updatePost(Number(param.id), data);
+  }
+
+  @Get(':id')
+  getPost(@Param() param: { id: string }, @CurrentUser() userId: number) {
+    return this.appService.getOnePost(Number(param.id), userId);
   }
 }

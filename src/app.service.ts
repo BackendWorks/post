@@ -1,46 +1,59 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Post } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
 import { CreatePostDto, UpdatePostDto } from './dtos';
-import { IMailPayload } from './types';
 import { PrismaService } from './services';
+import { GetResponse } from './types';
 
 @Injectable()
 export class AppService {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
-    @Inject('MAIL_SERVICE') private readonly mailClient: ClientProxy,
     private prisma: PrismaService,
   ) {
     this.authClient.connect();
-    this.mailClient.connect();
+  }
+
+  public async getOnePost(id, _userId) {
+    return this.prisma.post.findUnique({
+      where: {
+        id,
+      },
+    });
   }
 
   public async createNewPost(
     data: CreatePostDto,
-    authUserId: number,
+    userId: number,
   ): Promise<Post> {
-    const post = {} as Post;
-    post.content = data.content;
-    post.author = authUserId;
-    post.title = data.title;
-    post.image = String(data.fileId);
-    const create_post = await this.prisma.post.create({ data: post });
-    const createdBy = await firstValueFrom(
-      this.authClient.send('get_user_by_id', {
-        userId: create_post.author,
-      }),
-    );
-    create_post.author = createdBy;
-    return create_post;
+    try {
+      const post = {} as Post;
+      post.content = data.content;
+      post.author = userId;
+      post.title = data.title;
+      post.image = data.fileId;
+      const create_post = await this.prisma.post.create({ data: post });
+      const createdBy = await firstValueFrom(
+        this.authClient.send(
+          'get_user_by_userid',
+          JSON.stringify({
+            userId,
+          }),
+        ),
+      );
+      create_post.author = createdBy;
+      return create_post;
+    } catch (e) {
+      throw e;
+    }
   }
 
   public async getAllPosts(data: {
     page: number;
     limit: number;
     term: string;
-  }): Promise<Post[]> {
+  }): Promise<GetResponse<Post>> {
     let { limit, page } = data;
     if (!page || page === 0) {
       page = 1;
@@ -49,7 +62,25 @@ export class AppService {
       limit = 10;
     }
     const skip = (page - 1) * limit;
-    return this.prisma.post.findMany({
+    const count = await this.prisma.post.count({
+      where: {
+        OR: [
+          {
+            content: {
+              contains: data.term,
+              mode: 'insensitive',
+            },
+          },
+          {
+            title: {
+              contains: data.term,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+    });
+    const response = await this.prisma.post.findMany({
       where: {
         OR: [
           {
@@ -69,34 +100,37 @@ export class AppService {
       skip,
       take: limit,
     });
+    return {
+      count,
+      data: response,
+    };
   }
 
   public async updatePost(id: number, data: UpdatePostDto): Promise<Post> {
-    await this.prisma.post.update({
-      where: {
-        id,
-      },
-      data: data,
-    });
-    const updatedPost = await this.prisma.post.findUnique({ where: { id } });
-    const createdBy = await firstValueFrom(
-      this.authClient.send('get_user_by_id', {
-        userId: updatedPost.author,
-      }),
-    );
-    updatedPost.author = createdBy;
-    const payload: IMailPayload = {
-      template: 'POST_UPDATED',
-      payload: {
-        emails: [createdBy.email],
-        data: {
-          firstName: createdBy.firstName,
-          lastName: createdBy.lastName,
+    try {
+      const findPost = await this.prisma.post.findUnique({ where: { id } });
+      if (!findPost) {
+        throw new HttpException('post_not_found', HttpStatus.NOT_FOUND);
+      }
+      const post = await this.prisma.post.update({
+        where: {
+          id,
         },
-        subject: 'Post Updated',
-      },
-    };
-    this.mailClient.emit('send_email', payload);
-    return updatedPost;
+        data: {
+          title: data.title,
+          content: data.content,
+        },
+      });
+      const createdBy = await firstValueFrom(
+        this.authClient.send(
+          'get_user_by_userid',
+          JSON.stringify({ userId: post.author }),
+        ),
+      );
+      post.author = createdBy;
+      return post;
+    } catch (e) {
+      throw e;
+    }
   }
 }

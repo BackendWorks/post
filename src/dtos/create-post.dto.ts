@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreatePostDto {
   @ApiProperty()
@@ -14,6 +14,6 @@ export class CreatePostDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty({ message: 'fileId is required' })
+  @IsOptional()
   public fileId: string;
 }

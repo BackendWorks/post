@@ -21,6 +21,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (typeof exception.getResponse() === 'object') {
       response.status(statusCode).send(exception.getResponse());
     } else {
+      console.log(exception.message);
       const message = await i18n.t(`translation.${exception.message}`);
       response.status(statusCode).json({
         statusCode,
