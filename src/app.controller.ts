@@ -1,15 +1,29 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CreatePostDto, UpdatePostDto } from './dtos';
-import { CurrentUser } from './decorators';
+import { CurrentUser, Public } from './decorators';
+import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
+import { PrismaService } from './services';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private healthCheckService: HealthCheckService,
+    private prismaService: PrismaService,
+  ) {}
+
+  @Get('/health')
+  @HealthCheck()
+  @Public()
+  public async getHealth() {
+    return this.healthCheckService.check([
+      () => this.prismaService.$queryRaw`SELECT 1`,
+    ]);
+  }
 
   @Post()
   createPost(@Body() data: CreatePostDto, @CurrentUser() userId: number) {
-    console.log(data);
     return this.appService.createNewPost(data, userId);
   }
 
@@ -29,7 +43,7 @@ export class AppController {
   }
 
   @Get(':id')
-  getPost(@Param() param: { id: string }, @CurrentUser() userId: number) {
-    return this.appService.getOnePost(Number(param.id), userId);
+  getPost(@Param() param: { id: string }) {
+    return this.appService.getOnePost(Number(param.id));
   }
 }

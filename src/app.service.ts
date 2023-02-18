@@ -15,7 +15,7 @@ export class AppService {
     this.authClient.connect();
   }
 
-  public async getOnePost(id, _userId) {
+  public async getOnePost(id) {
     return this.prisma.post.findUnique({
       where: {
         id,

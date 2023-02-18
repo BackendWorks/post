@@ -7,7 +7,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { PrismaService } from './services';
 import { join } from 'path';
-import { HealthController } from './health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard, RolesGuard } from './guards';
@@ -39,7 +38,6 @@ import { LoggerModule } from 'nestjs-pino';
         AcceptLanguageResolver,
       ],
     }),
-    TerminusModule,
     ClientsModule.registerAsync([
       {
         name: 'AUTH_SERVICE',
@@ -57,8 +55,9 @@ import { LoggerModule } from 'nestjs-pino';
         inject: [ConfigService],
       },
     ]),
+    TerminusModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [AppController],
   providers: [
     AppService,
     PrismaService,
