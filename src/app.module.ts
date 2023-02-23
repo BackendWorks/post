@@ -10,22 +10,9 @@ import { join } from 'path';
 import { TerminusModule } from '@nestjs/terminus';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard, RolesGuard } from './guards';
-import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
-    LoggerModule.forRoot({
-      ...(process.env.NODE_ENV === 'development' && {
-        pinoHttp: {
-          transport: {
-            target: 'pino-pretty',
-            options: {
-              singleLine: true,
-            },
-          },
-        },
-      }),
-    }),
     ConfigModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
