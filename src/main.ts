@@ -60,7 +60,11 @@ async function bootstrap() {
   });
   await app.startAllMicroservices();
   await app.listen(configService.get('servicePort'));
-  logger.log('🚀 Post service started successfully');
+  logger.log(
+    `🚀 Post service started successfully on port ${configService.get(
+      'servicePort',
+    )}`,
+  );
 }
 bootstrap();
 
