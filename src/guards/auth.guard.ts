@@ -1,5 +1,7 @@
 import {
   ExecutionContext,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -31,13 +33,13 @@ export class JwtAuthGuard {
       throw new UnauthorizedException();
     }
     token = token.replace('Bearer ', '');
-    const user = await firstValueFrom(
-      this.authClient.send('validate_token', JSON.stringify({ token })),
+    const response = await firstValueFrom(
+      this.authClient.send('validate_token', token),
     );
-    if (!user) {
-      throw new UnauthorizedException();
+    if (!response.status) {
+      throw new HttpException(response.error, HttpStatus.BAD_REQUEST);
     }
-    request.userId = user['userId'];
+    request.user = response.data;
     return true;
   }
 }

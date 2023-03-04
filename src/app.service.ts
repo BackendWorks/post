@@ -16,11 +16,22 @@ export class AppService {
   }
 
   public async getOnePost(id) {
-    return this.prisma.post.findUnique({
+    const post = await this.prisma.post.findUnique({
       where: {
         id,
       },
     });
+    if (!post) {
+      throw new HttpException('post_not_found', HttpStatus.NOT_FOUND);
+    }
+    const createdBy = await firstValueFrom(
+      this.authClient.send(
+        'get_user_by_id',
+        JSON.stringify({ id: post.author }),
+      ),
+    );
+    post.author = createdBy;
+    return post;
   }
 
   public async createNewPost(
@@ -36,9 +47,9 @@ export class AppService {
       const create_post = await this.prisma.post.create({ data: post });
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_userid',
+          'get_user_by_id',
           JSON.stringify({
-            userId,
+            id: userId,
           }),
         ),
       );
@@ -63,7 +74,7 @@ export class AppService {
     }
     const skip = (page - 1) * limit;
     const count = await this.prisma.post.count({
-      where: {
+      where: data.term && {
         OR: [
           {
             content: {
@@ -81,7 +92,7 @@ export class AppService {
       },
     });
     const response = await this.prisma.post.findMany({
-      where: {
+      where: data.term && {
         OR: [
           {
             content: {
@@ -100,6 +111,15 @@ export class AppService {
       skip,
       take: limit,
     });
+    for (const post of response) {
+      const createdBy = await firstValueFrom(
+        this.authClient.send(
+          'get_user_by_id',
+          JSON.stringify({ id: post.author }),
+        ),
+      );
+      post.author = createdBy;
+    }
     return {
       count,
       data: response,
@@ -123,8 +143,8 @@ export class AppService {
       });
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_userid',
-          JSON.stringify({ userId: post.author }),
+          'get_user_by_id',
+          JSON.stringify({ id: post.author }),
         ),
       );
       post.author = createdBy;
