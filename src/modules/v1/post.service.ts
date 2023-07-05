@@ -2,12 +2,12 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Post } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
-import { CreatePostDto, UpdatePostDto } from './dtos';
-import { PrismaService } from './services';
-import { GetResponse } from './types';
+import { CreatePostDto, UpdatePostDto } from '../../core';
+import { PrismaService } from '../../services';
+import { GetResponse } from '../../types';
 
 @Injectable()
-export class AppService {
+export class PostService {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
     private prisma: PrismaService,

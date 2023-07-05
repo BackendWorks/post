@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from './config/config.module';
-import { ConfigService } from './config/config.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { PrismaService } from './services';
 import { join } from 'path';
 import { TerminusModule } from '@nestjs/terminus';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard, RolesGuard } from './guards';
+import { JwtAuthGuard, RolesGuard } from './core';
+import { PostModule } from './modules/v1/post.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigService } from './config/config.service';
 
 @Module({
   imports: [
-    ConfigModule,
+    PostModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
@@ -46,7 +46,6 @@ import { JwtAuthGuard, RolesGuard } from './guards';
   ],
   controllers: [AppController],
   providers: [
-    AppService,
     PrismaService,
     {
       provide: APP_GUARD,
