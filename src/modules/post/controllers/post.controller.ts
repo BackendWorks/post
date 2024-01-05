@@ -1,18 +1,19 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { PostService } from './post.service';
-import {
-  CreatePostDto,
-  CurrentUser,
-  GetAllPostsDto,
-  UpdatePostDto,
-} from 'src/core';
+import { PostService } from '../services/post.service';
+import { CreatePostDto } from '../dtos/create.post.dto';
+import { AuthUser } from '../../../core/decorators/auth.user.decorator';
+import { GetAllPostsDto } from '../dtos/get.post.dto';
+import { UpdatePostDto } from '../dtos/update.post.dto';
 
-@Controller('v1')
+@Controller({
+  version: '1',
+  path: '/post',
+})
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  createPost(@Body() data: CreatePostDto, @CurrentUser() user) {
+  createPost(@Body() data: CreatePostDto, @AuthUser() user) {
     return this.postService.createNewPost(data, user.id);
   }
 

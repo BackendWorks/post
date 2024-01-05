@@ -1,3 +1,4 @@
 {
-  "post_not_found": "Post not found."
+  "postNotFound": "Post not found.",
+  "accessTokenUnauthorized": "Access token is unauthorized."
 }

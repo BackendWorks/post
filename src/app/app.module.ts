@@ -1,23 +1,26 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { ConfigModule } from './config/config.module';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
-import { PrismaService } from './services';
+import { PrismaService } from '../common/services/prisma.service';
 import { join } from 'path';
 import { TerminusModule } from '@nestjs/terminus';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard, RolesGuard } from './core';
-import { PostModule } from './modules/v1/post.module';
+import { RolesGuard } from '../core/guards/roles.guard';
+import { PostModule } from '../modules/post/post.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigService } from './config/config.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CoreModule } from 'src/core/core.module';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   imports: [
     PostModule,
+    CommonModule,
+    CoreModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: join(__dirname, '/i18n/'),
+        path: join(__dirname, '../i18n/'),
         watch: true,
       },
       resolvers: [
@@ -32,8 +35,8 @@ import { ConfigService } from './config/config.service';
         useFactory: async (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [`${configService.get('rb_url')}`],
-            queue: `${configService.get('auth_queue')}`,
+            urls: [`${configService.get('rmq.uri')}`],
+            queue: `${configService.get('rmq.auth')}`,
             queueOptions: {
               durable: false,
             },
@@ -47,10 +50,6 @@ import { ConfigService } from './config/config.service';
   controllers: [AppController],
   providers: [
     PrismaService,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

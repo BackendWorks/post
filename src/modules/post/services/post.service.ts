@@ -2,9 +2,10 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Post } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
-import { CreatePostDto, UpdatePostDto } from '../../core';
-import { PrismaService } from '../../services';
-import { GetResponse } from '../../types';
+import { UpdatePostDto } from '../dtos/update.post.dto';
+import { CreatePostDto } from '../dtos/create.post.dto';
+import { GetResponse } from '../interfaces/get.posts.interface';
+import { PrismaService } from 'src/services/prisma.service';
 
 @Injectable()
 export class PostService {
@@ -15,14 +16,14 @@ export class PostService {
     this.authClient.connect();
   }
 
-  public async getOnePost(id) {
+  public async getOnePost(id: number) {
     const post = await this.prisma.post.findUnique({
       where: {
-        id,
+        id: Number(id),
       },
     });
     if (!post) {
-      throw new HttpException('post_not_found', HttpStatus.NOT_FOUND);
+      throw new HttpException('postNotFound', HttpStatus.NOT_FOUND);
     }
     const createdBy = await firstValueFrom(
       this.authClient.send(
@@ -130,7 +131,7 @@ export class PostService {
     try {
       const findPost = await this.prisma.post.findUnique({ where: { id } });
       if (!findPost) {
-        throw new HttpException('post_not_found', HttpStatus.NOT_FOUND);
+        throw new HttpException('postNotFound', HttpStatus.NOT_FOUND);
       }
       const post = await this.prisma.post.update({
         where: {

@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule } from '../../config/config.module';
-import { ConfigService } from '../../config/config.service';
-import { PostController } from './post.controller';
-import { PrismaService } from '../../services';
-import { PostService } from './post.service';
+import { PostController } from './controllers/post.controller';
+import { PostService } from './services/post.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PrismaService } from 'src/services/prisma.service';
 
 @Module({
   imports: [
@@ -16,8 +15,8 @@ import { PostService } from './post.service';
         useFactory: async (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [`${configService.get('rb_url')}`],
-            queue: `${configService.get('auth_queue')}`,
+            urls: [`${configService.get('rmq.uri')}`],
+            queue: `${configService.get('rmq.auth')}`,
             queueOptions: {
               durable: false,
             },
