@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { UpdatePostDto } from '../dtos/update.post.dto';
 import { CreatePostDto } from '../dtos/create.post.dto';
 import { GetResponse } from '../interfaces/get.posts.interface';
-import { PrismaService } from 'src/services/prisma.service';
+import { PrismaService } from '../../../common/services/prisma.service';
 
 @Injectable()
 export class PostService {
