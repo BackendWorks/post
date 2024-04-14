@@ -12,5 +12,5 @@ export class GetAllPostsDto {
 
   @ApiProperty()
   @IsOptional()
-  search: string;
+  search?: string;
 }

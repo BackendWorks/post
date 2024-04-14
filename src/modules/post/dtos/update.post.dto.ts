@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class UpdatePostDto {
   @ApiProperty()
@@ -15,5 +15,6 @@ export class UpdatePostDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  public fileId: string;
+  @IsArray()
+  public photos?: string[];
 }

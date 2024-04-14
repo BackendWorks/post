@@ -3,7 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PostController } from './controllers/post.controller';
 import { PostService } from './services/post.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../common/services/prisma.service';
+import { PrismaService } from '../../core/services/prisma.service';
 
 @Module({
   imports: [

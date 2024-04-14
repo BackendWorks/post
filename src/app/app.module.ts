@@ -1,22 +1,19 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
-import { PrismaService } from '../common/services/prisma.service';
 import { join } from 'path';
+import configs from '../config';
 import { TerminusModule } from '@nestjs/terminus';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from '../core/guards/roles.guard';
 import { PostModule } from '../modules/post/post.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CoreModule } from 'src/core/core.module';
-import { CommonModule } from 'src/common/common.module';
 
 @Module({
   imports: [
     PostModule,
-    CommonModule,
     CoreModule,
+    TerminusModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
@@ -45,15 +42,15 @@ import { CommonModule } from 'src/common/common.module';
         inject: [ConfigService],
       },
     ]),
-    TerminusModule,
+    ConfigModule.forRoot({
+      load: configs,
+      isGlobal: true,
+      cache: true,
+      envFilePath: ['.env'],
+      expandVariables: true,
+    }),
   ],
   controllers: [AppController],
-  providers: [
-    PrismaService,
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  providers: [],
 })
 export class AppModule {}

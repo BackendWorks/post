@@ -4,11 +4,12 @@ import { Post } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
 import { UpdatePostDto } from '../dtos/update.post.dto';
 import { CreatePostDto } from '../dtos/create.post.dto';
-import { GetResponse } from '../interfaces/get.posts.interface';
-import { PrismaService } from '../../../common/services/prisma.service';
+import { GetResponse } from '../interfaces/post.interface';
+import { PrismaService } from '../../../core/services/prisma.service';
+import { IPostService } from '../interfaces/post.service.interface';
 
 @Injectable()
-export class PostService {
+export class PostService implements IPostService {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
     private prisma: PrismaService,
@@ -40,15 +41,19 @@ export class PostService {
     userId: number,
   ): Promise<Post> {
     try {
-      const post = {} as Post;
-      post.content = data.content;
-      post.author = userId;
-      post.title = data.title;
-      post.image = data.fileId;
-      const create_post = await this.prisma.post.create({ data: post });
+      const create_post = await this.prisma.post.create({
+        data: {
+          title: data?.title?.trim(),
+          content: data?.content?.trim(),
+          author: userId,
+          photos: {
+            create: data.photos.map((item) => ({ key: item })),
+          },
+        },
+      });
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_id',
+          'getUserByIdCall',
           JSON.stringify({
             id: userId,
           }),
@@ -115,7 +120,7 @@ export class PostService {
     for (const post of response) {
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_id',
+          'getUserByIdCall',
           JSON.stringify({ id: post.author }),
         ),
       );
@@ -144,7 +149,7 @@ export class PostService {
       });
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_id',
+          'getUserByIdCall',
           JSON.stringify({ id: post.author }),
         ),
       );
