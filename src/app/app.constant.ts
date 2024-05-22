@@ -9,3 +9,5 @@ export const statusMessages = {
 };
 
 export const IS_PUBLIC_KEY = 'isPublic';
+
+export const isDev = process.env.NODE_ENV === 'development' ? true : false;

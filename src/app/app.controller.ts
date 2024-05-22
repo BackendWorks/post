@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { Public } from '../core/decorators/public.decorator';
+import { Public } from '../decorators/public.decorator';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 import { PrismaService } from '../common/services/prisma.service';
 

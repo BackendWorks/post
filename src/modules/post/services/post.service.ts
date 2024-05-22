@@ -26,10 +26,7 @@ export class PostService {
       throw new HttpException('postNotFound', HttpStatus.NOT_FOUND);
     }
     const createdBy = await firstValueFrom(
-      this.authClient.send(
-        'get_user_by_id',
-        JSON.stringify({ id: post.author }),
-      ),
+      this.authClient.send('getUserById', JSON.stringify({ id: post.author })),
     );
     post.author = createdBy;
     return post;
@@ -40,22 +37,31 @@ export class PostService {
     userId: number,
   ): Promise<Post> {
     try {
-      const post = {} as Post;
-      post.content = data.content;
-      post.author = userId;
-      post.title = data.title;
-      post.image = data.fileId;
-      const create_post = await this.prisma.post.create({ data: post });
+      const { content, images, title } = data;
+      const createPost = await this.prisma.post.create({
+        data: {
+          author: userId,
+          content: content.trim(),
+          title: title.trim(),
+          images: {
+            create: images.map((item) => {
+              return {
+                image: item,
+              };
+            }),
+          },
+        },
+      });
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_id',
+          'getUserById',
           JSON.stringify({
-            id: userId,
+            userId,
           }),
         ),
       );
-      create_post.author = createdBy;
-      return create_post;
+      createPost.author = createdBy;
+      return createPost;
     } catch (e) {
       throw e;
     }
@@ -115,8 +121,8 @@ export class PostService {
     for (const post of response) {
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_id',
-          JSON.stringify({ id: post.author }),
+          'getUserById',
+          JSON.stringify({ userId: post.author }),
         ),
       );
       post.author = createdBy;
@@ -129,6 +135,7 @@ export class PostService {
 
   public async updatePost(id: number, data: UpdatePostDto): Promise<Post> {
     try {
+      const { title, content } = data;
       const findPost = await this.prisma.post.findUnique({ where: { id } });
       if (!findPost) {
         throw new HttpException('postNotFound', HttpStatus.NOT_FOUND);
@@ -138,14 +145,14 @@ export class PostService {
           id,
         },
         data: {
-          title: data.title,
-          content: data.content,
+          title: title.trim(),
+          content: content.trim(),
         },
       });
       const createdBy = await firstValueFrom(
         this.authClient.send(
-          'get_user_by_id',
-          JSON.stringify({ id: post.author }),
+          'getUserById',
+          JSON.stringify({ userId: post.author }),
         ),
       );
       post.author = createdBy;

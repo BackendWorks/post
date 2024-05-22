@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -11,13 +11,26 @@ datasource db {
 }
 
 model Post {
-  id        Int       @id @default(autoincrement())
-  title     String
-  content   String
-  author    Int
-  image     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-  isDeleted Boolean?
+  id         Int          @id @default(autoincrement())
+  title      String
+  content    String
+  author     Int
+  images     PostImages[]
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean      @default(false)
+
+  @@map("posts")
+}
+
+model PostImages {
+  id         Int       @id @default(autoincrement())
+  image      String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+  Post       Post?     @relation(fields: [post_id], references: [id])
+  post_id    Int?
 }

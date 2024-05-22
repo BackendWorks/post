@@ -5,7 +5,7 @@ import { Transport } from '@nestjs/microservices';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app/app.module';
 import { setupSwagger } from './swagger';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 
 async function bootstrap() {
@@ -18,6 +18,20 @@ async function bootstrap() {
     },
   );
   const configService = app.get(ConfigService);
+
+  const expressApp = app.getHttpAdapter().getInstance();
+
+  // add root message
+  expressApp.get('/', (_req: Request, res: Response) => {
+    res.status(200).json({
+      status: 200,
+      message: `Message from ${configService.get('app.name')}`,
+      data: {
+        timestamp: new Date(),
+      },
+    });
+  });
+
   const port: number = configService.get<number>('app.http.port');
   const host: string = configService.get<string>('app.http.host');
   const globalPrefix: string = configService.get<string>('app.globalPrefix');
@@ -44,7 +58,7 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [`${configService.get('rmq.uri')}`],
-      queue: `${configService.get('rmq.post')}`,
+      queue: `${configService.get('rmq.files')}`,
       queueOptions: { durable: false },
       prefetchCount: 1,
     },

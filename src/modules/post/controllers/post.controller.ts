@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { PostService } from '../services/post.service';
 import { CreatePostDto } from '../dtos/create.post.dto';
-import { AuthUser } from '../../../core/decorators/auth.user.decorator';
+import { AuthUser } from '../../../decorators/auth.user.decorator';
 import { GetAllPostsDto } from '../dtos/get.post.dto';
 import { UpdatePostDto } from '../dtos/update.post.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('post')
 @Controller({
   version: '1',
   path: '/post',

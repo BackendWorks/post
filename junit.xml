@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="7" failures="0" errors="0" time="1.308">
+  <testsuite name="PostService" errors="0" failures="0" skipped="0" timestamp="2024-05-22T10:06:01" time="1.279" tests="7">
+    <testcase classname="PostService should be defined" name="PostService should be defined" time="0.006">
+    </testcase>
+    <testcase classname="PostService getOnePost should return a post with author details" name="PostService getOnePost should return a post with author details" time="0.002">
+    </testcase>
+    <testcase classname="PostService getOnePost should throw an error if post not found" name="PostService getOnePost should throw an error if post not found" time="0.007">
+    </testcase>
+    <testcase classname="PostService createNewPost should create a new post" name="PostService createNewPost should create a new post" time="0.001">
+    </testcase>
+    <testcase classname="PostService getAllPosts should return paginated posts with author details" name="PostService getAllPosts should return paginated posts with author details" time="0.002">
+    </testcase>
+    <testcase classname="PostService updatePost should update an existing post" name="PostService updatePost should update an existing post" time="0.001">
+    </testcase>
+    <testcase classname="PostService updatePost should throw an error if post not found" name="PostService updatePost should throw an error if post not found" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>

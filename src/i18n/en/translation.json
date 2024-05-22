@@ -1,4 +1,5 @@
 {
   "postNotFound": "Post not found.",
-  "accessTokenUnauthorized": "Access token is unauthorized."
+  "accessTokenUnauthorized": "Access token is unauthorized.",
+  "internalServerError": "Internal server error."
 }

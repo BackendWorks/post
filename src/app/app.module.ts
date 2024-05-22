@@ -1,22 +1,24 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { PrismaService } from '../common/services/prisma.service';
 import { join } from 'path';
 import { TerminusModule } from '@nestjs/terminus';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from '../core/guards/roles.guard';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { RolesGuard } from '../guards/roles.guard';
 import { PostModule } from '../modules/post/post.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CoreModule } from 'src/core/core.module';
 import { CommonModule } from 'src/common/common.module';
+import { LoggingMiddleware } from 'src/middlewares/logging.middleware';
+import { ResponseInterceptor } from 'src/interceptors/response.interceptor';
+import { GlobalExceptionFilter } from 'src/interceptors/exception.interceptor';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Module({
   imports: [
     PostModule,
     CommonModule,
-    CoreModule,
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
@@ -52,8 +54,24 @@ import { CommonModule } from 'src/common/common.module';
     PrismaService,
     {
       provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(LoggingMiddleware).forRoutes('*');
+  }
+}
