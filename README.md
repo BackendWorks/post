@@ -1,54 +1,47 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
-
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript repository.
+[Nest](https://github.com/nestjs/nest) Microservice framework post service TypeScript repository.
 
 ## Installation
 
 ```bash
-$ npm install
+$ yarn
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ npm run dev
+$ yarn dev
 
 # production mode
-$ npm start
-
-# debug mode
-$ npm run debug
+$ yarn start
 ```
 
 ## Database Migration
 
 ```bash
 # generate schema
-$ npm run generate
+$ yarn generate
 
 # migrate dev
-$ npm run migrate
+$ yarn migrate
 
 # migrate prod
-$ npm run migrate:prod
+$ yarn migrate:prod
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ npm run test
+$ yarn test
 
 # e2e tests
-$ npm run test:e2e
+$ yarn test:e2e
 
 # test coverage
-$ npm run test:cov
+$ yarn test:cov
 ```
 
 ## Support
