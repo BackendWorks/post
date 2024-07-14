@@ -4,25 +4,29 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { firstValueFrom, of } from 'rxjs';
-import { statusMessages } from '../app/app.constant';
+import { HttpArgumentsHost } from '@nestjs/common/interfaces';
+import { I18nService } from 'nestjs-i18n';
+import { Observable, firstValueFrom, of } from 'rxjs';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  public constructor(private readonly reflector: Reflector) {}
+  constructor(private readonly i18n: I18nService) {}
 
-  public async intercept(
+  async intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Promise<any> {
-    const body = await firstValueFrom(next.handle());
-    const status =
-      this.reflector.get<number>('__httpCode__', context.getHandler()) || 200;
+  ): Promise<Observable<unknown>> {
+    const ctx: HttpArgumentsHost = context.switchToHttp();
+    const response = ctx.getResponse();
+    const statusCode: number = response.statusCode;
+    const responseBody = await firstValueFrom(next.handle());
+    const message = await this.i18n.t(`success.${statusCode}`);
+
     return of({
-      statusCode: status,
-      message: statusMessages[status],
-      data: body,
+      statusCode,
+      timestamp: new Date().toISOString(),
+      message,
+      data: responseBody,
     });
   }
 }

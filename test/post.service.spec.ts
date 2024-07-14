@@ -2,11 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { of } from 'rxjs';
-import { PostService } from './post.service';
-import { PrismaService } from '../../../common/services/prisma.service';
-import { CreatePostDto } from '../dtos/create.post.dto';
-import { UpdatePostDto } from '../dtos/update.post.dto';
 import { Post } from '@prisma/client';
+import { PostCreateDto } from 'src/modules/post/dtos/post.create.dto';
+import { PostUpdateDto } from 'src/modules/post/dtos/post.update.dto';
+import { PostGetDto } from 'src/modules/post/dtos/post.get.dto';
+
+import { PrismaService } from '../src/common/services/prisma.service';
+import { PostService } from '../src/modules/post/services/post.service';
 
 describe('PostService', () => {
   let service: PostService;
@@ -83,7 +85,7 @@ describe('PostService', () => {
 
   describe('createNewPost', () => {
     it('should create a new post', async () => {
-      const data: CreatePostDto = {
+      const data: PostCreateDto = {
         content: 'Test content',
         images: ['image1.jpg'],
         title: 'Test title',
@@ -113,11 +115,25 @@ describe('PostService', () => {
       );
       expect(result).toEqual({ ...createdPost, author: user });
     });
+
+    it('should throw an error if creation fails', async () => {
+      const data: PostCreateDto = {
+        content: 'Test content',
+        images: ['image1.jpg'],
+        title: 'Test title',
+      };
+      const userId = 1;
+      const error = new Error('Database error');
+
+      jest.spyOn(prismaService.post, 'create').mockRejectedValue(error);
+
+      await expect(service.createNewPost(data, userId)).rejects.toThrow(error);
+    });
   });
 
   describe('getAllPosts', () => {
     it('should return paginated posts with author details', async () => {
-      const data = { page: 1, limit: 10, term: 'Test' };
+      const data: PostGetDto = { skip: 0, take: 10, search: 'Test' };
       const posts = [
         { id: 1, author: 1, content: 'Test content', title: 'Test title' },
       ] as Post[];
@@ -133,26 +149,97 @@ describe('PostService', () => {
       expect(prismaService.post.count).toHaveBeenCalledWith({
         where: {
           OR: [
-            { content: { contains: data.term, mode: 'insensitive' } },
-            { title: { contains: data.term, mode: 'insensitive' } },
+            { content: { contains: data.search, mode: 'insensitive' } },
+            { title: { contains: data.search, mode: 'insensitive' } },
           ],
         },
       });
       expect(prismaService.post.findMany).toHaveBeenCalledWith({
         where: {
           OR: [
-            { content: { contains: data.term, mode: 'insensitive' } },
-            { title: { contains: data.term, mode: 'insensitive' } },
+            { content: { contains: data.search, mode: 'insensitive' } },
+            { title: { contains: data.search, mode: 'insensitive' } },
           ],
         },
-        skip: 0,
-        take: data.limit,
+        skip: data.skip,
+        take: data.take,
       });
 
       expect(result).toEqual({
         count,
         data: posts.map((post) => ({ ...post, author: user })),
       });
+    });
+
+    it('should return empty array if no posts found', async () => {
+      const data: PostGetDto = { skip: 0, take: 10, search: 'Test' };
+      const posts = [] as Post[];
+      const count = 0;
+
+      jest.spyOn(prismaService.post, 'count').mockResolvedValue(count);
+      jest.spyOn(prismaService.post, 'findMany').mockResolvedValue(posts);
+
+      const result = await service.getAllPosts(data);
+
+      expect(prismaService.post.count).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { content: { contains: data.search, mode: 'insensitive' } },
+            { title: { contains: data.search, mode: 'insensitive' } },
+          ],
+        },
+      });
+      expect(prismaService.post.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { content: { contains: data.search, mode: 'insensitive' } },
+            { title: { contains: data.search, mode: 'insensitive' } },
+          ],
+        },
+        skip: data.skip,
+        take: data.take,
+      });
+
+      expect(result).toEqual({
+        count,
+        data: posts,
+      });
+    });
+
+    it('should return posts without search term', async () => {
+      const data: PostGetDto = { skip: 0, take: 10, search: '' };
+      const posts = [
+        { id: 1, author: 1, content: 'Test content', title: 'Test title' },
+      ] as Post[];
+      const count = 1;
+      const user = { id: 1, username: 'testuser' };
+
+      jest.spyOn(prismaService.post, 'count').mockResolvedValue(count);
+      jest.spyOn(prismaService.post, 'findMany').mockResolvedValue(posts);
+      jest.spyOn(authClient, 'send').mockReturnValue(of(user));
+
+      const result = await service.getAllPosts(data);
+
+      expect(prismaService.post.count).toHaveBeenCalledWith({ where: '' });
+      expect(prismaService.post.findMany).toHaveBeenCalledWith({
+        where: '',
+        skip: data.skip,
+        take: data.take,
+      });
+
+      expect(result).toEqual({
+        count,
+        data: posts.map((post) => ({ ...post, author: user })),
+      });
+    });
+
+    it('should handle errors gracefully', async () => {
+      const data: PostGetDto = { skip: 0, take: 10, search: 'Test' };
+      const error = new Error('Database error');
+
+      jest.spyOn(prismaService.post, 'count').mockRejectedValue(error);
+
+      await expect(service.getAllPosts(data)).rejects.toThrow(error);
     });
   });
 
@@ -162,7 +249,7 @@ describe('PostService', () => {
       const data = {
         title: 'Updated title',
         content: 'Updated content',
-      } as UpdatePostDto;
+      } as PostUpdateDto;
       const post = { id, author: 1, ...data } as unknown as Post;
       const user = { id: 1, username: 'testuser' };
 
@@ -194,13 +281,30 @@ describe('PostService', () => {
       const data = {
         title: 'Updated title',
         content: 'Updated content',
-      } as UpdatePostDto;
+      } as PostUpdateDto;
 
       jest.spyOn(prismaService.post, 'findUnique').mockResolvedValue(null);
 
       await expect(service.updatePost(id, data)).rejects.toThrow(
         new HttpException('postNotFound', HttpStatus.NOT_FOUND),
       );
+    });
+
+    it('should throw an error if update fails', async () => {
+      const id = 1;
+      const data = {
+        title: 'Updated title',
+        content: 'Updated content',
+      } as PostUpdateDto;
+      const error = new Error('Database error');
+
+      jest.spyOn(prismaService.post, 'findUnique').mockResolvedValue({
+        id,
+        author: 1,
+      } as Post);
+      jest.spyOn(prismaService.post, 'update').mockRejectedValue(error);
+
+      await expect(service.updatePost(id, data)).rejects.toThrow(error);
     });
   });
 });

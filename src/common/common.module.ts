@@ -1,10 +1,10 @@
-import configs from '../config';
 import { Module } from '@nestjs/common';
-import { PrismaService } from './services/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 
+import configs from '../config';
+import { PrismaService } from './services/prisma.service';
+
 @Module({
-  controllers: [],
   imports: [
     ConfigModule.forRoot({
       load: configs,
@@ -15,5 +15,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   providers: [PrismaService],
+  exports: [PrismaService],
 })
 export class CommonModule {}

@@ -31,6 +31,8 @@ model PostImages {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
   is_deleted Boolean   @default(false)
-  Post       Post?     @relation(fields: [post_id], references: [id])
+  post       Post?     @relation(fields: [post_id], references: [id])
   post_id    Int?
+
+  @@map("posts_images")
 }

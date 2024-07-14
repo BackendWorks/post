@@ -1,23 +1,23 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Post } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
-import { UpdatePostDto } from '../dtos/update.post.dto';
-import { CreatePostDto } from '../dtos/create.post.dto';
-import { GetResponse } from '../interfaces/get.posts.interface';
-import { PrismaService } from '../../../common/services/prisma.service';
+import { PrismaService } from 'src/common/services/prisma.service';
+
+import { PostUpdateDto } from '../dtos/post.update.dto';
+import { PostCreateDto } from '../dtos/post.create.dto';
+import { PostGetDto } from '../dtos/post.get.dto';
 
 @Injectable()
 export class PostService {
   constructor(
+    private prismaService: PrismaService,
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
-    private prisma: PrismaService,
   ) {
     this.authClient.connect();
   }
 
   public async getOnePost(id: number) {
-    const post = await this.prisma.post.findUnique({
+    const post = await this.prismaService.post.findUnique({
       where: {
         id: Number(id),
       },
@@ -32,13 +32,10 @@ export class PostService {
     return post;
   }
 
-  public async createNewPost(
-    data: CreatePostDto,
-    userId: number,
-  ): Promise<Post> {
+  public async createNewPost(data: PostCreateDto, userId: number) {
     try {
       const { content, images, title } = data;
-      const createPost = await this.prisma.post.create({
+      const createPost = await this.prismaService.post.create({
         data: {
           author: userId,
           content: content.trim(),
@@ -67,57 +64,48 @@ export class PostService {
     }
   }
 
-  public async getAllPosts(data: {
-    page: number;
-    limit: number;
-    term: string;
-  }): Promise<GetResponse<Post>> {
-    let { limit, page } = data;
-    if (!page || page === 0) {
-      page = 1;
-    }
-    if (!limit) {
-      limit = 10;
-    }
-    const skip = (page - 1) * limit;
-    const count = await this.prisma.post.count({
-      where: data.term && {
+  public async getAllPosts(data: PostGetDto) {
+    const { skip, take, search } = data;
+    const count = await this.prismaService.post.count({
+      where: search && {
         OR: [
           {
             content: {
-              contains: data.term,
+              contains: search,
               mode: 'insensitive',
             },
           },
           {
             title: {
-              contains: data.term,
+              contains: search,
               mode: 'insensitive',
             },
           },
         ],
       },
     });
-    const response = await this.prisma.post.findMany({
-      where: data.term && {
+
+    const response = await this.prismaService.post.findMany({
+      where: search && {
         OR: [
           {
             content: {
-              contains: data.term,
+              contains: search,
               mode: 'insensitive',
             },
           },
           {
             title: {
-              contains: data.term,
+              contains: search,
               mode: 'insensitive',
             },
           },
         ],
       },
       skip,
-      take: limit,
+      take,
     });
+
     for (const post of response) {
       const createdBy = await firstValueFrom(
         this.authClient.send(
@@ -127,20 +115,23 @@ export class PostService {
       );
       post.author = createdBy;
     }
+
     return {
       count,
       data: response,
     };
   }
 
-  public async updatePost(id: number, data: UpdatePostDto): Promise<Post> {
+  public async updatePost(id: number, data: PostUpdateDto) {
     try {
       const { title, content } = data;
-      const findPost = await this.prisma.post.findUnique({ where: { id } });
+      const findPost = await this.prismaService.post.findUnique({
+        where: { id },
+      });
       if (!findPost) {
         throw new HttpException('postNotFound', HttpStatus.NOT_FOUND);
       }
-      const post = await this.prisma.post.update({
+      const post = await this.prismaService.post.update({
         where: {
           id,
         },

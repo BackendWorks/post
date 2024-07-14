@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { PostService } from '../services/post.service';
-import { CreatePostDto } from '../dtos/create.post.dto';
-import { AuthUser } from '../../../decorators/auth.user.decorator';
-import { GetAllPostsDto } from '../dtos/get.post.dto';
-import { UpdatePostDto } from '../dtos/update.post.dto';
 import { ApiTags } from '@nestjs/swagger';
+
+import { PostService } from '../services/post.service';
+import { PostCreateDto } from '../dtos/post.create.dto';
+import { AuthUser } from '../../../decorators/auth.decorator';
+import { PostGetDto } from '../dtos/post.get.dto';
+import { PostUpdateDto } from '../dtos/post.update.dto';
 
 @ApiTags('post')
 @Controller({
@@ -15,12 +16,12 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  createPost(@Body() data: CreatePostDto, @AuthUser() user) {
+  createPost(@Body() data: PostCreateDto, @AuthUser() user) {
     return this.postService.createNewPost(data, user.id);
   }
 
   @Get()
-  getPosts(@Query() data: GetAllPostsDto) {
+  getPosts(@Query() data: PostGetDto) {
     const { limit, page, search } = data;
     return this.postService.getAllPosts({
       limit: Number(limit),
@@ -30,7 +31,7 @@ export class PostController {
   }
 
   @Put(':id')
-  updatePosts(@Param('id') id: number, @Body() data: UpdatePostDto) {
+  updatePosts(@Param('id') id: number, @Body() data: PostUpdateDto) {
     return this.postService.updatePost(id, data);
   }
 

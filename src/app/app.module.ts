@@ -1,28 +1,32 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
-import { PrismaService } from '../common/services/prisma.service';
 import { join } from 'path';
+
+import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TerminusModule } from '@nestjs/terminus';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { RolesGuard } from '../guards/roles.guard';
-import { PostModule } from '../modules/post/post.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CommonModule } from 'src/common/common.module';
 import { LoggingMiddleware } from 'src/middlewares/logging.middleware';
 import { ResponseInterceptor } from 'src/interceptors/response.interceptor';
-import { GlobalExceptionFilter } from 'src/interceptors/exception.interceptor';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { HttpExceptionFilter } from 'src/filters/http.exception.filter';
+
+import { PrismaService } from '../common/services/prisma.service';
+import { PostModule } from '../modules/post/post.module';
+import { AppController } from './app.controller';
+import { RolesGuard } from '../guards/roles.guard';
 
 @Module({
   imports: [
     PostModule,
     CommonModule,
+    TerminusModule,
+
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: join(__dirname, '../i18n/'),
+        path: join(__dirname, '../languages/'),
         watch: true,
       },
       resolvers: [
@@ -30,6 +34,7 @@ import { AuthGuard } from 'src/guards/auth.guard';
         AcceptLanguageResolver,
       ],
     }),
+
     ClientsModule.registerAsync([
       {
         name: 'AUTH_SERVICE',
@@ -47,7 +52,6 @@ import { AuthGuard } from 'src/guards/auth.guard';
         inject: [ConfigService],
       },
     ]),
-    TerminusModule,
   ],
   controllers: [AppController],
   providers: [
@@ -66,7 +70,7 @@ import { AuthGuard } from 'src/guards/auth.guard';
     },
     {
       provide: APP_FILTER,
-      useClass: GlobalExceptionFilter,
+      useClass: HttpExceptionFilter,
     },
   ],
 })
