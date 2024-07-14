@@ -22,12 +22,7 @@ export class PostController {
 
   @Get()
   getPosts(@Query() data: PostGetDto) {
-    const { limit, page, search } = data;
-    return this.postService.getAllPosts({
-      limit: Number(limit),
-      page: Number(page),
-      term: search,
-    });
+    return this.postService.getAllPosts(data);
   }
 
   @Put(':id')
