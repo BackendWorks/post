@@ -1,6 +1,7 @@
 import { Controller, Get, VERSION_NEUTRAL } from '@nestjs/common';
-import { Public } from '../decorators/public.decorator';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
+
+import { Public } from '../decorators/public.decorator';
 import { PrismaService } from '../common/services/prisma.service';
 
 @Controller({

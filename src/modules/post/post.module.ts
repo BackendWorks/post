@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { PostController } from './controllers/post.controller';
 import { PostService } from './services/post.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/services/prisma.service';
 
 @Module({
