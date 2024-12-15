@@ -64,7 +64,7 @@ export class PostResponseDto {
     description: 'Author ID of the post',
     example: 1,
   })
-  author: number;
+  author: string;
 
   @ApiProperty({
     type: [PostImagesDto],
