@@ -1,0 +1,8 @@
+[submodule "auth"]
+	url = git@github.com:llcfishstat/auth.git
+[submodule "post"]
+	url = git@github.com:llcfishstat/post.git
+[submodule "notification"]
+	url = git@github.com:llcfishstat/notification.git
+[submodule "files"]
+	url = git@github.com:llcfishstat/files.git
