@@ -32,7 +32,7 @@ export class PostService {
     return post;
   }
 
-  public async createNewPost(data: PostCreateDto, userId: number) {
+  public async createNewPost(data: PostCreateDto, userId: string) {
     try {
       const { content, images, title } = data;
       const createPost = await this.prismaService.post.create({

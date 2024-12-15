@@ -56,7 +56,10 @@ describe('PostService', () => {
 
   describe('getOnePost', () => {
     it('should return a post with author details', async () => {
-      const post = { id: 1, author: 1 } as Post;
+      const post = {
+        id: 1,
+        author: '7166a277-7d6c-4b67-9f3f-a25fc2e6649c',
+      } as Post;
       const user = { id: 1, username: 'testuser' };
 
       jest.spyOn(prismaService.post, 'findUnique').mockResolvedValue(post);
@@ -90,7 +93,7 @@ describe('PostService', () => {
         images: ['image1.jpg'],
         title: 'Test title',
       };
-      const userId = 1;
+      const userId = '7166a277-7d6c-4b67-9f3f-a25fc2e6649c';
       const createdPost = { id: 1, author: userId, ...data } as unknown as Post;
       const user = { id: userId, username: 'testuser' };
 
@@ -122,7 +125,7 @@ describe('PostService', () => {
         images: ['image1.jpg'],
         title: 'Test title',
       };
-      const userId = 1;
+      const userId = '7166a277-7d6c-4b67-9f3f-a25fc2e6649c';
       const error = new Error('Database error');
 
       jest.spyOn(prismaService.post, 'create').mockRejectedValue(error);
@@ -135,7 +138,12 @@ describe('PostService', () => {
     it('should return paginated posts with author details', async () => {
       const data: PostGetDto = { skip: 0, take: 10, search: 'Test' };
       const posts = [
-        { id: 1, author: 1, content: 'Test content', title: 'Test title' },
+        {
+          id: 1,
+          author: '7166a277-7d6c-4b67-9f3f-a25fc2e6649c',
+          content: 'Test content',
+          title: 'Test title',
+        },
       ] as Post[];
       const count = 1;
       const user = { id: 1, username: 'testuser' };
@@ -209,7 +217,12 @@ describe('PostService', () => {
     it('should return posts without search term', async () => {
       const data: PostGetDto = { skip: 0, take: 10, search: '' };
       const posts = [
-        { id: 1, author: 1, content: 'Test content', title: 'Test title' },
+        {
+          id: 1,
+          author: '7166a277-7d6c-4b67-9f3f-a25fc2e6649c',
+          content: 'Test content',
+          title: 'Test title',
+        },
       ] as Post[];
       const count = 1;
       const user = { id: 1, username: 'testuser' };
@@ -300,7 +313,7 @@ describe('PostService', () => {
 
       jest.spyOn(prismaService.post, 'findUnique').mockResolvedValue({
         id,
-        author: 1,
+        author: '7166a277-7d6c-4b67-9f3f-a25fc2e6649c',
       } as Post);
       jest.spyOn(prismaService.post, 'update').mockRejectedValue(error);
 
