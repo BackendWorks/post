@@ -15,7 +15,7 @@ model Post {
   id         Int          @id @default(autoincrement())
   title      String
   content    String
-  author     Int
+  author     String       @default(uuid())
   images     PostImages[]
   created_at DateTime     @default(now())
   updated_at DateTime     @updatedAt
