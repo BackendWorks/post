@@ -72,7 +72,7 @@ describe('PostService', () => {
       });
       expect(authClient.send).toHaveBeenCalledWith(
         'getUserById',
-        JSON.stringify({ id: 1 }),
+        JSON.stringify({ id: '7166a277-7d6c-4b67-9f3f-a25fc2e6649c' }),
       );
       expect(result).toEqual({ ...post, author: user });
     });
