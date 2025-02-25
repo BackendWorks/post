@@ -1,5 +1,12 @@
 {
-  "postNotFound": "Post not found.",
-  "accessTokenUnauthorized": "Access token is unauthorized.",
-  "internalServerError": "Internal server error."
+    "success": {
+        "detailsFetched": "Post details have been retrieved successfully",
+        "deleted": "Post has been deleted successfully",
+        "updated": "Post has been updated successfully",
+        "created": "Post has been created successfully"
+    },
+    "error": {
+        "notFound": "Post not found in database",
+        "exists": "Post with provided data already exists"
+    }
 }

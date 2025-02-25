@@ -1,37 +1,108 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpStatus,
+    Param,
+    ParseUUIDPipe,
+    Post,
+    Put,
+    Query,
+} from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 
 import { PostService } from '../services/post.service';
-import { PostCreateDto } from '../dtos/post.create.dto';
-import { AuthUser } from '../../../decorators/auth.decorator';
-import { PostGetDto } from '../dtos/post.get.dto';
+import { PostCreateDto } from '../dtos/post-create.dto';
 import { PostUpdateDto } from '../dtos/post.update.dto';
+import { PostResponseDto } from '../dtos/post.response.dto';
+import { PostBulkResponseDto } from '../dtos/post-bulk-response.dto';
+import { PostListDto } from '../dtos/post-list.dto';
+import { PostBulkRequestDto } from '../dtos/post-bulk-request.dto';
 
-@ApiTags('post')
+import { MessageKey } from '@/common/decorators/message.decorator';
+import { SwaggerResponse } from '@/common/dtos/base-response.dto';
+import {
+    PaginatedData,
+    SwaggerPaginatedResponse,
+} from '@/common/dtos/paginated-response.dto';
+import { AuthUser } from '@/common/decorators/request-user.decorator';
+import { IAuthPayload } from '@/common/interfaces/request.interface';
+
+@ApiTags('posts')
 @Controller({
-  version: '1',
-  path: '/post',
+    version: '1',
+    path: '/post',
 })
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+    constructor(private readonly postService: PostService) {}
 
-  @Post()
-  createPost(@Body() data: PostCreateDto, @AuthUser() user) {
-    return this.postService.createNewPost(data, user.id);
-  }
+    @Post()
+    @ApiBearerAuth('accessToken')
+    @MessageKey('post.success.created')
+    @ApiOperation({ summary: 'Create a new post' })
+    @ApiResponse({
+        status: HttpStatus.CREATED,
+        description: 'Post created successfully',
+        type: SwaggerResponse(PostResponseDto),
+    })
+    async createPost(
+        @AuthUser() user: IAuthPayload,
+        @Body() createPostDto: PostCreateDto,
+    ): Promise<PostResponseDto> {
+        return this.postService.createPost(createPostDto, user.id);
+    }
 
-  @Get()
-  getPosts(@Query() data: PostGetDto) {
-    return this.postService.getAllPosts(data);
-  }
+    @Get()
+    @ApiBearerAuth('accessToken')
+    @MessageKey('post.success.listed')
+    @ApiOperation({ summary: 'Get list of posts' })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Posts retrieved successfully',
+        type: SwaggerPaginatedResponse(PostResponseDto),
+    })
+    async getPosts(
+        @Query() query: PostListDto,
+    ): Promise<PaginatedData<PostResponseDto>> {
+        return this.postService.getPosts(query);
+    }
 
-  @Put(':id')
-  updatePosts(@Param('id') id: number, @Body() data: PostUpdateDto) {
-    return this.postService.updatePost(id, data);
-  }
+    @Put(':id')
+    @ApiBearerAuth('accessToken')
+    @MessageKey('post.success.updated')
+    @ApiOperation({ summary: 'Update post details' })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Post updated successfully',
+        type: SwaggerResponse(PostResponseDto),
+    })
+    async updatePost(
+        @AuthUser() user: IAuthPayload,
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() updatePostDto: PostUpdateDto,
+    ): Promise<PostResponseDto> {
+        return this.postService.updatePost(user.id, id, updatePostDto);
+    }
 
-  @Get(':id')
-  getPost(@Param('id') id: number) {
-    return this.postService.getOnePost(id);
-  }
+    @Delete('batch')
+    @ApiBearerAuth('accessToken')
+    @MessageKey('post.success.deleted')
+    @ApiOperation({ summary: 'Batch delete posts' })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Posts deleted successfully',
+        type: SwaggerResponse(PostBulkResponseDto),
+    })
+    async softDeletePosts(
+        @AuthUser() user: IAuthPayload,
+        @Body() body: PostBulkRequestDto,
+    ): Promise<PostBulkResponseDto> {
+        return this.postService.softDeletePosts(user.id, body.ids);
+    }
 }

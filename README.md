@@ -1,49 +1,111 @@
-## Description
+# Post Service
 
-[Nest](https://github.com/nestjs/nest) Microservice framework post service TypeScript repository.
+## Overview
 
-## Installation
+A robust microservice for post management, built with NestJS, providing comprehensive content creation, retrieval, and management capabilities.
+
+## Key Features
+
+- CRUD operations for posts
+- Advanced filtering and search
+- Pagination support
+- Content validation
+- Event-driven architecture
+- Comprehensive error handling
+- Scalable design
+
+## Technology Stack
+
+- NestJS
+- Prisma ORM
+- PostgreSQL
+- KafkaJS
+- Sentry for error tracking
+- Swagger for API documentation
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- Yarn
+- PostgreSQL
+- Kafka
+
+### Installation
 
 ```bash
-$ yarn
+# Install dependencies
+$ yarn install
+
+# Generate Prisma client
+$ yarn prisma:generate
+
+# Run database migrations
+$ yarn prisma:migrate
 ```
 
-## Running the app
+## Running the Service
 
 ```bash
-# development
+# Development mode
 $ yarn dev
 
-# production mode
+# Production mode
 $ yarn start
 ```
 
-## Database Migration
+## Database Management
 
 ```bash
-# generate schema
-$ yarn generate
+# Generate Prisma schema
+$ yarn prisma:generate
 
-# migrate dev
-$ yarn migrate
+# Run database migrations (development)
+$ yarn prisma:migrate
 
-# migrate prod
-$ yarn migrate:prod
+# Run database migrations (production)
+$ yarn prisma:migrate-prod
+
+# Open Prisma Studio
+$ yarn prisma:studio
 ```
 
-## Test
+## Testing
 
 ```bash
-# unit tests
+# Run unit tests
 $ yarn test
 
-# e2e tests
+# Run end-to-end tests
 $ yarn test:e2e
 
-# test coverage
+# Generate test coverage report
 $ yarn test:cov
 ```
 
-## License
+## Configuration
 
-Nest is [MIT licensed](LICENSE).
+Configuration is managed through environment variables and NestJS ConfigModule.
+
+Key configurations:
+
+- Database connection
+- Kafka settings
+- Sentry error tracking
+
+## Monitoring and Observability
+
+- Sentry error tracking
+- Swagger API documentation
+- Health check endpoints
+- Logging
+
+## Development Workflow
+
+1. Fork the repository
+2. Create a feature branch
+3. Implement changes
+4. Write tests
+5. Run linting and formatting
+6. Submit a pull request

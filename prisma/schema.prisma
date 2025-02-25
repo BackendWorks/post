@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,28 +8,17 @@ datasource db {
 }
 
 model Post {
-  id         Int          @id @default(autoincrement())
-  title      String
-  content    String
-  author     Int
-  images     PostImages[]
-  created_at DateTime     @default(now())
-  updated_at DateTime     @updatedAt
-  deleted_at DateTime?
-  is_deleted Boolean      @default(false)
+  id        String    @id @default(uuid())
+  title     String
+  content   String
+  images    String[]
+  createdBy String    @map("created_by") @db.Uuid
+  updatedBy String?   @map("updated_by") @db.Uuid
+  deletedBy String?   @map("deleted_by") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  isDeleted Boolean   @default(false) @map("is_deleted")
 
   @@map("posts")
-}
-
-model PostImages {
-  id         Int       @id @default(autoincrement())
-  image      String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
-  is_deleted Boolean   @default(false)
-  post       Post?     @relation(fields: [post_id], references: [id])
-  post_id    Int?
-
-  @@map("posts_images")
 }

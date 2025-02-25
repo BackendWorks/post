@@ -1,20 +1,70 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
 
-import configs from '../config';
-import { PrismaService } from './services/prisma.service';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import {
+    AcceptLanguageResolver,
+    HeaderResolver,
+    I18nModule,
+    QueryResolver,
+} from 'nestjs-i18n';
+
+import configs from './config';
+import { ResponseExceptionFilter } from './filters/exception.filter';
+import { ResponseInterceptor } from './interceptors/response.interceptor';
+import { RequestLoggerMiddleware } from './middlewares/request.middleware';
+import { AuthGuard } from './guards/auth.guard';
+import { RolesGuard } from './guards/role.guard';
+
+import { KafkaAuthModule } from '@/services/auth/kafka.auth.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      load: configs,
-      isGlobal: true,
-      cache: true,
-      envFilePath: ['.env'],
-      expandVariables: true,
-    }),
-  ],
-  providers: [PrismaService],
-  exports: [PrismaService],
+    imports: [
+        ConfigModule.forRoot({
+            load: configs,
+            isGlobal: true,
+            cache: true,
+            envFilePath: ['.env'],
+            expandVariables: true,
+        }),
+
+        I18nModule.forRoot({
+            fallbackLanguage: 'en',
+            loaderOptions: {
+                path: join(__dirname, '../languages/'),
+                watch: true,
+            },
+            resolvers: [
+                { use: QueryResolver, options: ['lang'] },
+                AcceptLanguageResolver,
+                new HeaderResolver(['x-lang']),
+            ],
+        }),
+
+        KafkaAuthModule,
+    ],
+    providers: [
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: ResponseInterceptor,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: ResponseExceptionFilter,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: AuthGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: RolesGuard,
+        },
+    ],
 })
-export class CommonModule {}
+export class CommonModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(RequestLoggerMiddleware).forRoutes('*');
+    }
+}

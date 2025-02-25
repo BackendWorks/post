@@ -1,33 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { PostController } from './controllers/post.controller';
 import { PostService } from './services/post.service';
-import { PrismaService } from '../../common/services/prisma.service';
+import { PostMappingService } from './services/post-mapping.service';
+
+import { DatabaseModule } from '@/database/database.module';
+import { KafkaAuthModule } from '@/services/auth/kafka.auth.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    ClientsModule.registerAsync([
-      {
-        name: 'AUTH_SERVICE',
-        imports: [ConfigModule],
-        useFactory: async (configService: ConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [`${configService.get('rmq.uri')}`],
-            queue: `${configService.get('rmq.auth')}`,
-            queueOptions: {
-              durable: false,
-            },
-          },
-        }),
-        inject: [ConfigService],
-      },
-    ]),
-  ],
-  controllers: [PostController],
-  providers: [PrismaService, PostService],
+    imports: [DatabaseModule, KafkaAuthModule],
+    controllers: [PostController],
+    providers: [PostService, PostMappingService],
+    exports: [PostService, PostMappingService],
 })
 export class PostModule {}
