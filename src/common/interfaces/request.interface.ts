@@ -1,10 +1,12 @@
 import { ROLE } from '../enums/app.enum';
 
-export interface IAuthPayload {
+export interface IAuthUserPayload {
     id: string;
     role: ROLE;
 }
 
-export interface IRequest {
-    user: IAuthPayload;
+export interface IRequestWithUser extends Request {
+    user: IAuthUserPayload;
+    requestId?: string;
+    correlationId?: string;
 }

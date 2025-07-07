@@ -2,40 +2,90 @@ import { Injectable } from '@nestjs/common';
 import { Post } from '@prisma/client';
 
 import { PostResponseDto } from '../dtos/post.response.dto';
-
-import { KafkaAuthService } from '@/services/auth/kafka.auth.service';
+import { ROLE } from '../../../common/enums/app.enum';
+import { ApiBaseQueryDto } from '../../../common/dtos/api-query.dto';
+import { PaginatedApiResponseDto } from '../../../common/dtos/api-response.dto';
 
 @Injectable()
 export class PostMappingService {
-    constructor(private readonly kafkaAuthService: KafkaAuthService) {}
-
-    async enrichPostData(post: Post): Promise<PostResponseDto> {
-        const createdBy = post.createdBy
-            ? await this.kafkaAuthService.getUserById(post.createdBy)
-            : null;
-        const updatedBy = post.updatedBy
-            ? await this.kafkaAuthService.getUserById(post.updatedBy)
-            : null;
-        const deletedBy = post.deletedBy
-            ? await this.kafkaAuthService.getUserById(post.deletedBy)
-            : null;
-
+    mapToResponse(post: Post): PostResponseDto {
         return {
             id: post.id,
             title: post.title,
             content: post.content,
-            images: post.images,
+            createdBy: {
+                id: post.createdBy,
+                email: '', // This should be fetched from auth service
+                firstName: '',
+                lastName: '',
+                isVerified: false,
+                role: ROLE.USER,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
+            },
+            images: post.images || [],
             createdAt: post.createdAt,
             updatedAt: post.updatedAt,
-            deletedAt: post.deletedAt,
-            isDeleted: post.isDeleted,
-            createdBy: createdBy,
-            updatedBy: updatedBy,
-            deletedBy: deletedBy,
+            isDeleted: post.isDeleted || false,
+            // Optional fields
+            ...(post.updatedBy && {
+                updatedBy: {
+                    id: post.updatedBy,
+                    email: '',
+                    firstName: '',
+                    lastName: '',
+                    isVerified: false,
+                    role: ROLE.USER,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt,
+                },
+            }),
+            ...(post.deletedBy && {
+                deletedBy: {
+                    id: post.deletedBy,
+                    email: '',
+                    firstName: '',
+                    lastName: '',
+                    isVerified: false,
+                    role: ROLE.USER,
+                    createdAt: post.createdAt,
+                    updatedAt: post.updatedAt,
+                },
+            }),
+            ...(post.deletedAt && { deletedAt: post.deletedAt }),
         };
     }
 
+    mapToListResponse(
+        posts: Post[],
+        total: number,
+        params: ApiBaseQueryDto,
+    ): PaginatedApiResponseDto<PostResponseDto> {
+        const { page = 1, limit = 10 } = params;
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            statusCode: 200,
+            timestamp: new Date().toISOString(),
+            message: 'Posts retrieved successfully',
+            data: posts.map(post => this.mapToResponse(post)),
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            },
+        };
+    }
+
+    // Legacy methods for backward compatibility
+    async enrichPostData(post: Post): Promise<PostResponseDto> {
+        return this.mapToResponse(post);
+    }
+
     async enrichPostsData(posts: Post[]): Promise<PostResponseDto[]> {
-        return Promise.all(posts.map((post) => this.enrichPostData(post)));
+        return posts.map(post => this.mapToResponse(post));
     }
 }

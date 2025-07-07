@@ -10,12 +10,7 @@ import {
     Put,
     Query,
 } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { PostService } from '../services/post.service';
 import { PostCreateDto } from '../dtos/post-create.dto';
@@ -25,14 +20,11 @@ import { PostBulkResponseDto } from '../dtos/post-bulk-response.dto';
 import { PostListDto } from '../dtos/post-list.dto';
 import { PostBulkRequestDto } from '../dtos/post-bulk-request.dto';
 
-import { MessageKey } from '@/common/decorators/message.decorator';
-import { SwaggerResponse } from '@/common/dtos/base-response.dto';
-import {
-    PaginatedData,
-    SwaggerPaginatedResponse,
-} from '@/common/dtos/paginated-response.dto';
-import { AuthUser } from '@/common/decorators/request-user.decorator';
-import { IAuthPayload } from '@/common/interfaces/request.interface';
+import { MessageKey } from '../../../common/decorators/message.decorator';
+import { SwaggerPaginatedResponse, SwaggerResponse } from 'src/common/dtos/api-response.dto';
+import { AuthUser } from '../../../common/decorators/auth-user.decorator';
+import { PaginatedResult } from '../../../common/interfaces/query-builder.interface';
+import { IAuthUserPayload } from '@/common/interfaces/request.interface';
 
 @ApiTags('posts')
 @Controller({
@@ -52,7 +44,7 @@ export class PostController {
         type: SwaggerResponse(PostResponseDto),
     })
     async createPost(
-        @AuthUser() user: IAuthPayload,
+        @AuthUser() user: IAuthUserPayload,
         @Body() createPostDto: PostCreateDto,
     ): Promise<PostResponseDto> {
         return this.postService.createPost(createPostDto, user.id);
@@ -67,9 +59,7 @@ export class PostController {
         description: 'Posts retrieved successfully',
         type: SwaggerPaginatedResponse(PostResponseDto),
     })
-    async getPosts(
-        @Query() query: PostListDto,
-    ): Promise<PaginatedData<PostResponseDto>> {
+    async getPosts(@Query() query: PostListDto): Promise<PaginatedResult<PostResponseDto>> {
         return this.postService.getPosts(query);
     }
 
@@ -83,7 +73,7 @@ export class PostController {
         type: SwaggerResponse(PostResponseDto),
     })
     async updatePost(
-        @AuthUser() user: IAuthPayload,
+        @AuthUser() user: IAuthUserPayload,
         @Param('id', ParseUUIDPipe) id: string,
         @Body() updatePostDto: PostUpdateDto,
     ): Promise<PostResponseDto> {
@@ -100,7 +90,7 @@ export class PostController {
         type: SwaggerResponse(PostBulkResponseDto),
     })
     async softDeletePosts(
-        @AuthUser() user: IAuthPayload,
+        @AuthUser() user: IAuthUserPayload,
         @Body() body: PostBulkRequestDto,
     ): Promise<PostBulkResponseDto> {
         return this.postService.softDeletePosts(user.id, body.ids);

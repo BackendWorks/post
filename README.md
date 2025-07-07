@@ -1,111 +1,401 @@
 # Post Service
 
-## Overview
+A microservice for managing blog posts and content in the NestJS microservices architecture.
 
-A robust microservice for post management, built with NestJS, providing comprehensive content creation, retrieval, and management capabilities.
+## 🚀 Features
 
-## Key Features
+- **Post Management**: Full CRUD operations for blog posts
+- **User Integration**: Integration with Auth Service for user authentication
+- **Search & Filtering**: Advanced search and filtering capabilities
+- **Pagination**: Efficient pagination for large datasets
+- **Soft Delete**: Soft delete functionality with audit trails
+- **gRPC Microservice**: Inter-service communication via gRPC
+- **REST API**: HTTP endpoints for post operations
+- **Database Integration**: PostgreSQL with Prisma ORM
+- **Caching**: Redis-based caching for performance
+- **Internationalization**: Multi-language support with nestjs-i18n
+- **API Documentation**: Swagger/OpenAPI documentation
+- **Health Checks**: Built-in health monitoring
+- **Security**: JWT authentication and authorization
 
-- CRUD operations for posts
-- Advanced filtering and search
-- Pagination support
-- Content validation
-- Event-driven architecture
-- Comprehensive error handling
-- Scalable design
+## 🏗️ Architecture
 
-## Technology Stack
+### Technology Stack
 
-- NestJS
-- Prisma ORM
+- **Framework**: NestJS 10.x
+- **Language**: TypeScript 5.x
+- **Database**: PostgreSQL with Prisma ORM
+- **Cache**: Redis with cache-manager
+- **Authentication**: JWT with Passport.js
+- **API Documentation**: Swagger/OpenAPI
+- **Microservice**: gRPC communication
+- **Validation**: class-validator and class-transformer
+- **Testing**: Jest
+
+### Service Structure
+
+```
+src/
+├── app/                    # Application bootstrap
+├── common/                 # Shared modules and utilities
+│   ├── config/            # Configuration management
+│   ├── constants/         # Application constants
+│   ├── decorators/        # Custom decorators
+│   ├── dtos/             # Data Transfer Objects
+│   ├── enums/            # Application enums
+│   ├── filters/          # Exception filters
+│   ├── guards/           # Authentication guards
+│   ├── interceptors/     # Response interceptors
+│   ├── interfaces/       # TypeScript interfaces
+│   ├── middlewares/      # Request middlewares
+│   └── services/         # Shared services
+├── generated/            # gRPC generated code
+├── languages/            # i18n translation files
+├── modules/             # Feature modules
+│   └── post/            # Post management module
+├── services/            # External service integrations
+│   └── auth/            # Auth service integration
+└── protos/              # gRPC protocol buffers
+```
+
+## 📋 Prerequisites
+
+- Node.js >= 18.0.0
+- npm >= 9.0.0
 - PostgreSQL
-- KafkaJS
-- Sentry for error tracking
-- Swagger for API documentation
+- Redis
+- Auth Service (for authentication)
 
-## Getting Started
+## 🛠️ Installation
 
-### Prerequisites
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd post
+   ```
 
-- Node.js 18+
-- Yarn
-- PostgreSQL
-- Kafka
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### Installation
+3. **Environment Configuration**
+   Create `.env` and `.env.docker` files with the following variables:
+   ```env
+   # App Configuration
+   NODE_ENV=development
+   APP_NAME=NestJS Post Service
+   APP_DEBUG=false
+   APP_CORS_ORIGINS=http://localhost:3000
 
+   # HTTP Configuration
+   HTTP_ENABLE=true
+   HTTP_HOST=0.0.0.0
+   HTTP_PORT=9002
+   HTTP_VERSIONING_ENABLE=false
+   HTTP_VERSION=1
+
+   # Database Configuration
+   DATABASE_URL=postgresql://username:password@localhost:5432/post_db
+
+   # Redis Configuration
+   REDIS_URL=redis://localhost:6379
+   REDIS_KEY_PREFIX=post:
+   REDIS_TTL=3600
+
+   # gRPC Configuration
+   GRPC_URL=0.0.0.0:50052
+   GRPC_PACKAGE=post
+
+   # Auth Service Configuration (for gRPC communication)
+   AUTH_SERVICE_URL=0.0.0.0:50051
+
+   # Monitoring (Optional)
+   SENTRY_DSN=your-sentry-dsn
+   ```
+
+4. **Database Setup**
+   ```bash
+   # Generate Prisma client
+   npm run prisma:generate
+
+   # Run migrations
+   npm run prisma:migrate
+
+   # (Optional) Open Prisma Studio
+   npm run prisma:studio
+   ```
+
+5. **Generate gRPC code**
+   ```bash
+   npm run proto:generate
+   ```
+
+## 🚀 Running the Service
+
+### Development Mode
 ```bash
-# Install dependencies
-$ yarn install
-
-# Generate Prisma client
-$ yarn prisma:generate
-
-# Run database migrations
-$ yarn prisma:migrate
+npm run dev
 ```
 
-## Running the Service
-
+### Production Mode
 ```bash
-# Development mode
-$ yarn dev
-
-# Production mode
-$ yarn start
+npm run build
+npm start
 ```
 
-## Database Management
-
+### Docker (if available)
 ```bash
-# Generate Prisma schema
-$ yarn prisma:generate
-
-# Run database migrations (development)
-$ yarn prisma:migrate
-
-# Run database migrations (production)
-$ yarn prisma:migrate-prod
-
-# Open Prisma Studio
-$ yarn prisma:studio
+docker build -t post-service .
+docker run -p 9002:9002 post-service
 ```
 
-## Testing
+## 📡 API Endpoints
 
-```bash
-# Run unit tests
-$ yarn test
+### Post Management Endpoints
 
-# Run end-to-end tests
-$ yarn test:e2e
+#### Public Endpoints
+- `GET /posts` - List all posts (paginated)
+- `GET /posts/:id` - Get post by ID
 
-# Generate test coverage report
-$ yarn test:cov
+#### Protected Endpoints
+- `POST /posts` - Create new post
+- `PUT /posts/:id` - Update post
+- `DELETE /posts/:id` - Delete post
+- `POST /posts/bulk-delete` - Bulk delete posts
+
+### Query Parameters
+
+#### Pagination
+- `page` (number): Page number (default: 1)
+- `limit` (number): Items per page (default: 10, max: 100)
+
+#### Search & Filtering
+- `search` (string): Search in title and content
+- `sortBy` (string): Sort field (default: createdAt)
+- `sortOrder` (string): Sort order - 'asc' or 'desc' (default: desc)
+
+#### Post List Specific
+- `authorId` (string): Filter by author ID
+- `page` (number): Page number
+- `limit` (number): Items per page
+
+### Health Check
+- `GET /health` - Service health status
+- `GET /` - Service information
+
+## 🔌 gRPC Services
+
+### PostService
+- `CreatePost` - Create a new post
+- `GetPost` - Get a single post by ID
+- `GetPosts` - Get paginated list of posts
+- `UpdatePost` - Update an existing post
+- `DeletePost` - Delete a post
+
+## 🗄️ Database Schema
+
+### Post Model
+```sql
+CREATE TABLE posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR NOT NULL,
+  content TEXT NOT NULL,
+  images TEXT[] DEFAULT '{}',
+  created_by UUID NOT NULL,
+  updated_by UUID,
+  deleted_by UUID,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  deleted_at TIMESTAMP,
+  is_deleted BOOLEAN DEFAULT false
+);
 ```
 
-## Configuration
+## 🔧 Configuration
 
-Configuration is managed through environment variables and NestJS ConfigModule.
+The service uses a modular configuration system with environment-specific settings:
 
-Key configurations:
+### App Configuration
+- **Name**: Service name and display information
+- **Environment**: Development, staging, production
+- **Debug**: Debug mode settings
+- **CORS**: Cross-origin resource sharing settings
 
-- Database connection
-- Kafka settings
-- Sentry error tracking
+### HTTP Configuration
+- **Port**: HTTP server port (default: 9002)
+- **Host**: HTTP server host
+- **Versioning**: API versioning settings
 
-## Monitoring and Observability
+### Database Configuration
+- **URL**: PostgreSQL connection string
+- **Migrations**: Database migration settings
 
-- Sentry error tracking
-- Swagger API documentation
-- Health check endpoints
-- Logging
+### Redis Configuration
+- **URL**: Redis connection string
+- **Key Prefix**: Cache key prefix
+- **TTL**: Cache time-to-live
 
-## Development Workflow
+### gRPC Configuration
+- **URL**: gRPC server address
+- **Package**: Protocol buffer package name
+
+### Auth Service Integration
+- **URL**: Auth service gRPC address for token validation
+
+## 📊 Data Models
+
+### Post Entity
+```typescript
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  images: string[];
+  createdBy: string;
+  updatedBy?: string;
+  deletedBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+  isDeleted: boolean;
+}
+```
+
+### Post Response DTO
+```typescript
+interface PostResponseDto {
+  id: string;
+  title: string;
+  content: string;
+  createdBy: UserResponseDto;
+  images: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  updatedBy?: UserResponseDto;
+  deletedBy?: UserResponseDto;
+  deletedAt?: Date;
+  isDeleted: boolean;
+}
+```
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:cov
+```
+
+## 📚 API Documentation
+
+When running in development mode, Swagger documentation is available at:
+```
+http://localhost:9002/docs
+```
+
+## 🔒 Security Features
+
+- **JWT Authentication**: Secure token-based authentication
+- **Role-based Access Control**: User authorization
+- **Input Validation**: Request validation with class-validator
+- **Helmet Security**: Security headers
+- **CORS Protection**: Cross-origin request protection
+- **Soft Delete**: Audit trail for deleted posts
+
+## 📊 Monitoring
+
+- **Health Checks**: Built-in health monitoring endpoints
+- **Sentry Integration**: Error tracking and monitoring
+- **Logging**: Structured logging
+- **Metrics**: Performance metrics collection
+
+## 🔄 Service Integration
+
+### Auth Service Integration
+The Post Service integrates with the Auth Service via gRPC for:
+- **Token Validation**: Validate JWT tokens
+- **User Information**: Get user details for post creation/updates
+- **Authorization**: Check user permissions
+
+### Integration Points
+- **gRPC Client**: Connects to Auth Service for authentication
+- **User Context**: Extracts user information from JWT tokens
+- **Audit Trail**: Tracks user actions on posts
+
+## 🚀 Deployment
+
+### Environment Variables
+Ensure all required environment variables are set in your deployment environment.
+
+### Database Migrations
+Run database migrations before starting the service:
+```bash
+npm run prisma:migrate:prod
+```
+
+### Health Checks
+The service provides health check endpoints for load balancers and monitoring systems.
+
+### Service Dependencies
+Ensure the Auth Service is running and accessible before starting the Post Service.
+
+## 🔧 Development
+
+### Available Scripts
+
+```bash
+# Development
+npm run dev              # Start in development mode
+npm run build           # Build the application
+npm run start           # Start in production mode
+
+# Database
+npm run prisma:generate # Generate Prisma client
+npm run prisma:migrate  # Run migrations
+npm run prisma:studio   # Open Prisma Studio
+
+# gRPC
+npm run proto:generate  # Generate gRPC code
+
+# Code Quality
+npm run lint            # Run ESLint
+npm run format          # Format code with Prettier
+
+# Testing
+npm test                # Run tests
+npm run test:watch      # Run tests in watch mode
+```
+
+### Code Structure
+
+The service follows a modular architecture with clear separation of concerns:
+
+- **Controllers**: Handle HTTP requests and responses
+- **Services**: Business logic and data processing
+- **DTOs**: Data transfer objects for API contracts
+- **Interfaces**: TypeScript interfaces for type safety
+- **Guards**: Authentication and authorization guards
+- **Interceptors**: Response transformation and logging
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Implement changes
-4. Write tests
-5. Run linting and formatting
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
 6. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions, please contact the development team or create an issue in the repository.

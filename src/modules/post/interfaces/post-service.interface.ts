@@ -3,25 +3,30 @@ import { PostListDto } from '../dtos/post-list.dto';
 import { PostResponseDto } from '../dtos/post.response.dto';
 import { PostUpdateDto } from '../dtos/post.update.dto';
 import { PostBulkResponseDto } from '../dtos/post-bulk-response.dto';
-
-import { PaginatedData } from '@/common/dtos/paginated-response.dto';
+import { PaginatedResult } from '../../../common/interfaces/query-builder.interface';
+import { ApiBaseQueryDto } from '../../../common/dtos/api-query.dto';
+import { PaginatedApiResponseDto } from '../../../common/dtos/api-response.dto';
 
 export interface IPostService {
-    createPost(
-        createPostDto: PostCreateDto,
-        userId: string,
-    ): Promise<PostResponseDto>;
+    // Create methods
+    create(createPostDto: PostCreateDto, userId: string): Promise<PostResponseDto>;
 
-    getPosts(query: PostListDto): Promise<PaginatedData<PostResponseDto>>;
+    createPost(createPostDto: PostCreateDto, userId: string): Promise<PostResponseDto>;
 
-    updatePost(
-        userId: string,
-        id: string,
-        updatePostDto: PostUpdateDto,
-    ): Promise<PostResponseDto>;
+    // Read methods
+    findAll(queryParams: ApiBaseQueryDto): Promise<PaginatedApiResponseDto<PostResponseDto>>;
 
-    softDeletePosts(
-        userId: string,
-        postIds: string[],
-    ): Promise<PostBulkResponseDto>;
+    findOne(id: string): Promise<PostResponseDto | null>;
+
+    getPosts(query: PostListDto): Promise<PaginatedResult<PostResponseDto>>;
+
+    // Update methods
+    update(id: string, updatePostDto: PostUpdateDto): Promise<PostResponseDto>;
+
+    updatePost(userId: string, id: string, updatePostDto: PostUpdateDto): Promise<PostResponseDto>;
+
+    // Delete methods
+    remove(id: string): Promise<any>;
+
+    softDeletePosts(userId: string, postIds: string[]): Promise<PostBulkResponseDto>;
 }

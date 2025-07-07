@@ -9,8 +9,10 @@
         "useDefineForClassFields": false,
         "target": "ESNext",
         "sourceMap": true,
+        "inlineSources": true,
+        "sourceRoot": "/",
         "outDir": "./dist",
-        "baseUrl": "./",
+        "baseUrl": "./src",
         "incremental": true,
         "skipLibCheck": true,
         "allowJs": false,
@@ -18,10 +20,14 @@
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "paths": {
-            "@/*": ["src/*"],
-            "@common/*": ["src/common/*"]
+            "@/*": ["*"],
+            "src/*": ["*"]
         }
     },
-    "include": ["src", "test"],
-    "exclude": ["node_modules", "dist", "*coverage"]
+    "include": ["src/**/*", "test/**/*"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "coverage",
+    ]
 }

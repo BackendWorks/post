@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { faker } from '@faker-js/faker';
 
-import { ROLE } from '@/common/enums/app.enum';
-import { IUser } from '@/common/interfaces/user.interface';
+import { ROLE } from '../../../common/enums/app.enum';
 
-export class UserResponseDto implements Partial<IUser> {
+export class UserResponseDto {
     @ApiProperty({
         description: 'Unique identifier for the user',
         example: faker.string.uuid(),
@@ -60,7 +59,7 @@ export class UserResponseDto implements Partial<IUser> {
 
     @ApiProperty({
         description: 'Role of the user',
-        example: ROLE.User,
+        example: ROLE.USER,
     })
     role: ROLE;
 
