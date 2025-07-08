@@ -5,12 +5,10 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class DatabaseService extends PrismaClient {
     protected logger: Logger;
-    constructor(prisma?: PrismaClient, logger?: Logger) {
+
+    constructor() {
         super();
-        this.logger = logger || new Logger(DatabaseService.name);
-        if (prisma) {
-            Object.assign(this, prisma);
-        }
+        this.logger = new Logger(DatabaseService.name);
     }
 
     async onModuleInit(): Promise<void> {
