@@ -80,38 +80,40 @@ src/
    ```
 
 3. **Environment Configuration**
-   Create `.env` and `.env.docker` files with the following variables:
+   The service includes a pre-configured `.env.docker` file with the following variables:
    ```env
    # App Configuration
-   NODE_ENV=development
-   APP_NAME=NestJS Post Service
-   APP_DEBUG=false
-   APP_CORS_ORIGINS=http://localhost:3000
+   NODE_ENV="local"
+   APP_NAME="@backendworks/post"
+   APP_CORS_ORIGINS="*"
+   APP_DEBUG=true
 
    # HTTP Configuration
    HTTP_ENABLE=true
-   HTTP_HOST=0.0.0.0
+   HTTP_HOST="0.0.0.0"
    HTTP_PORT=9002
-   HTTP_VERSIONING_ENABLE=false
+   HTTP_VERSIONING_ENABLE=true
    HTTP_VERSION=1
 
    # Database Configuration
-   DATABASE_URL=postgresql://username:password@localhost:5432/post_db
+   DATABASE_URL="postgresql://admin:master123@localhost:5432/postgres?schema=public"
+
+   # JWT Configuration
+   ACCESS_TOKEN_SECRET_KEY="EAJYjNJUnRGJ6uq1YfGw4NG1pd1z102J"
+   ACCESS_TOKEN_EXPIRED="1d"
+   REFRESH_TOKEN_SECRET_KEY="LcnlpiuHIJ6eS51u1mcOdk0P49r2Crwu"
+   REFRESH_TOKEN_EXPIRED="7d"
 
    # Redis Configuration
-   REDIS_URL=redis://localhost:6379
-   REDIS_KEY_PREFIX=post:
+   REDIS_URL="redis://localhost:6379"
+   REDIS_KEY_PREFIX="post:"
    REDIS_TTL=3600
 
    # gRPC Configuration
-   GRPC_URL=0.0.0.0:50052
-   GRPC_PACKAGE=post
-
-   # Auth Service Configuration (for gRPC communication)
-   AUTH_SERVICE_URL=0.0.0.0:50051
-
-   # Monitoring (Optional)
-   SENTRY_DSN=your-sentry-dsn
+   GRPC_URL="0.0.0.0:50052"
+   GRPC_PACKAGE="post"
+   GRPC_AUTH_URL="0.0.0.0:50051"
+   GRPC_AUTH_PACKAGE="auth"
    ```
 
 4. **Database Setup**
@@ -155,14 +157,12 @@ docker run -p 9002:9002 post-service
 ### Post Management Endpoints
 
 #### Public Endpoints
-- `GET /posts` - List all posts (paginated)
-- `GET /posts/:id` - Get post by ID
+- `GET /post` - List all posts (paginated)
 
 #### Protected Endpoints
-- `POST /posts` - Create new post
-- `PUT /posts/:id` - Update post
-- `DELETE /posts/:id` - Delete post
-- `POST /posts/bulk-delete` - Bulk delete posts
+- `POST /post` - Create new post
+- `PUT /post/:id` - Update post
+- `DELETE /post/batch` - Bulk delete posts
 
 ### Query Parameters
 
@@ -192,25 +192,6 @@ docker run -p 9002:9002 post-service
 - `GetPosts` - Get paginated list of posts
 - `UpdatePost` - Update an existing post
 - `DeletePost` - Delete a post
-
-## 🗄️ Database Schema
-
-### Post Model
-```sql
-CREATE TABLE posts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title VARCHAR NOT NULL,
-  content TEXT NOT NULL,
-  images TEXT[] DEFAULT '{}',
-  created_by UUID NOT NULL,
-  updated_by UUID,
-  deleted_by UUID,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  deleted_at TIMESTAMP,
-  is_deleted BOOLEAN DEFAULT false
-);
-```
 
 ## 🔧 Configuration
 
