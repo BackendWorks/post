@@ -3,12 +3,14 @@
 
 import { Observable } from 'rxjs';
 
+export type GrpcMetadata = Record<string, string | string[] | Buffer | Buffer[]>;
+
 export interface PostServiceClient {
-    createPost(request: CreatePostRequest, metadata?: any): Observable<CreatePostResponse>;
-    getPost(request: GetPostRequest, metadata?: any): Observable<GetPostResponse>;
-    getPosts(request: GetPostsRequest, metadata?: any): Observable<GetPostsResponse>;
-    updatePost(request: UpdatePostRequest, metadata?: any): Observable<UpdatePostResponse>;
-    deletePost(request: DeletePostRequest, metadata?: any): Observable<DeletePostResponse>;
+    createPost(request: CreatePostRequest, metadata?: GrpcMetadata): Observable<CreatePostResponse>;
+    getPost(request: GetPostRequest, metadata?: GrpcMetadata): Observable<GetPostResponse>;
+    getPosts(request: GetPostsRequest, metadata?: GrpcMetadata): Observable<GetPostsResponse>;
+    updatePost(request: UpdatePostRequest, metadata?: GrpcMetadata): Observable<UpdatePostResponse>;
+    deletePost(request: DeletePostRequest, metadata?: GrpcMetadata): Observable<DeletePostResponse>;
 }
 
 export interface PostServiceInterface {

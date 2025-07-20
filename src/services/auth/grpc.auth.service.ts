@@ -1,34 +1,67 @@
-import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { ClientGrpc } from '@nestjs/microservices';
+import { Injectable, Logger } from '@nestjs/common';
+import { GrpcClientService } from 'nestjs-grpc';
 import { ValidateTokenRequest, ValidateTokenResponse } from '../../generated/auth';
-import { firstValueFrom } from 'rxjs';
 
 @Injectable()
-export class GrpcAuthService implements OnModuleInit {
-    private authService: any;
+export class GrpcAuthService {
+    private readonly logger = new Logger(GrpcAuthService.name);
 
-    constructor(
-        private readonly configService: ConfigService,
-        @Inject('AUTH_PACKAGE') private readonly client: ClientGrpc,
-    ) {}
-
-    onModuleInit() {
-        this.authService = this.client.getService('AuthService');
-    }
+    constructor(private readonly grpcClientService: GrpcClientService) {}
 
     async validateToken(token: string): Promise<ValidateTokenResponse> {
-        const request: ValidateTokenRequest = { token };
-        return firstValueFrom(this.authService.validateToken(request));
+        try {
+            this.logger.debug(`Validating token via gRPC: ${token}...`);
+
+            const request: ValidateTokenRequest = { token };
+
+            const response = await this.grpcClientService.call<
+                ValidateTokenRequest,
+                ValidateTokenResponse
+            >('AuthService', 'ValidateToken', request);
+
+            this.logger.debug(`Token validation response: ${JSON.stringify(response)}`);
+            return response;
+        } catch (error) {
+            this.logger.error(`Token validation failed: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 
     async getUserById(userId: string): Promise<any> {
-        const request = { id: userId };
-        return firstValueFrom(this.authService.getUserById(request));
+        try {
+            this.logger.debug(`Getting user by ID via gRPC: ${userId}`);
+
+            const request = { id: userId };
+            const response = await this.grpcClientService.call<any, any>(
+                'AuthService',
+                'GetUserById',
+                request,
+            );
+
+            this.logger.debug(`Get user response: ${JSON.stringify(response)}`);
+            return response;
+        } catch (error) {
+            this.logger.error(`Get user by ID failed: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 
     async getUserByEmail(email: string): Promise<any> {
-        const request = { email };
-        return firstValueFrom(this.authService.getUserByEmail(request));
+        try {
+            this.logger.debug(`Getting user by email via gRPC: ${email}`);
+
+            const request = { email };
+            const response = await this.grpcClientService.call<any, any>(
+                'AuthService',
+                'GetUserByEmail',
+                request,
+            );
+
+            this.logger.debug(`Get user by email response: ${JSON.stringify(response)}`);
+            return response;
+        } catch (error) {
+            this.logger.error(`Get user by email failed: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 }

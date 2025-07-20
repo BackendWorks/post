@@ -3,8 +3,13 @@
 
 import { Observable } from 'rxjs';
 
+export type GrpcMetadata = Record<string, string | string[] | Buffer | Buffer[]>;
+
 export interface AuthServiceClient {
-    validateToken(request: ValidateTokenRequest, metadata?: any): Observable<ValidateTokenResponse>;
+    validateToken(
+        request: ValidateTokenRequest,
+        metadata?: GrpcMetadata,
+    ): Observable<ValidateTokenResponse>;
 }
 
 export interface AuthServiceInterface {

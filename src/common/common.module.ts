@@ -59,6 +59,10 @@ import { GrpcAuthModule } from '@/services/auth/grpc.auth.module';
                 // GRPC Configuration
                 GRPC_URL: Joi.string().required(),
                 GRPC_PACKAGE: Joi.string().default('post'),
+
+                // Auth Service GRPC Configuration
+                GRPC_AUTH_URL: Joi.string().required(),
+                GRPC_AUTH_PACKAGE: Joi.string().default('auth'),
             }),
         }),
         CacheModule.registerAsync({
